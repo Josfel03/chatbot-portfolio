@@ -44,3 +44,19 @@ git clone [https://github.com/Josfel03/chatbot-portfolio.git](https://github.com
 
 # SSH
 git clone git@github.com:Josfel03/chatbot-portfolio.git
+
+```
+### 2. Configuration
+Create a .env file in the root directory to store your API Key securely:
+```bash
+cd chatbot-portfolio
+touch .env
+#Add your OpenAI key inside the .env file:
+OPENAI_API_KEY=sk-your-openai-api-key-here
+```
+### 3.Build and Run (The "One-Click" Deploy)
+Launch the entire stack (API + Vector DB) using Docker Compose:
+```bash
+docker-compose up --build
+#Wait for the message: Uvicorn running on http://0.0.0.0:8000
+```
