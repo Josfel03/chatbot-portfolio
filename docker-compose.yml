@@ -1,0 +1,15 @@
+services:
+  rag-api:
+    build: .  # Construye usand el Dockerfile de aquí
+    container_name: chatbot-portfolio-container
+    ports:
+      - "8000:8000" # Conecta el puerto 8000 de tu PC al 8000 del contenedor
+    volumes:
+      # PERSISTENCIA: Esto es clave.
+      # Mapeamos la carpeta chroma_db de tu PC a la del contenedor.
+      # Así, si apagas Docker, ¡tu IA no olvida lo que aprendió!
+      - ./chroma_db:/app/chroma_db
+      - ./uploaded_files:/app/uploaded_files
+    env_file:
+      - .env  # Pasa tu API KEY automáticamente
+    restart: always # Si la app crashea, intenta revivirla sola

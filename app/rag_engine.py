@@ -39,19 +39,24 @@ def procesar_y_guardar_documento(ruta_pdf):
     splits = text_splitter.split_documents(docs)
     print(f"... Documento dividido en {len(splits)} fragmentos.")
 
-    # Limpiar DB anterior para evitar duplicados sucios en desarrollo
-    if os.path.exists(PERSIST_DIRECTORY):
-        shutil.rmtree(PERSIST_DIRECTORY)
-
-    # Guardar
-    Chroma.from_documents(
-        documents=splits,
-        embedding=OpenAIEmbeddings(),
+    # --- CAMBIO AQUÍ: NO BORRAMOS LA CARPETA ---
+    # Simplemente instanciamos Chroma. Si ya existe, añadirá los datos.
+    # (Para un portafolio simple, esto evita el error de Docker).
+    
+    vectorstore = Chroma(
+        embedding_function=OpenAIEmbeddings(),
         persist_directory=PERSIST_DIRECTORY
     )
-    print("--- ¡Éxito! Base de datos vectorial creada ---")
-    return True
+    
+    # Opcional: Si quieres limpiar la DB antes de agregar lo nuevo, descomenta esto:
+    # vectorstore.delete_collection() 
+    # vectorstore = Chroma(embedding_function=OpenAIEmbeddings(), persist_directory=PERSIST_DIRECTORY)
 
+    # Añadimos los documentos
+    vectorstore.add_documents(documents=splits)
+    
+    print("--- ¡Éxito! Base de datos vectorial actualizada ---")
+    return True
 def format_docs(docs):
     """Ayudante para convertir documentos recuperados en un solo string de texto"""
     return "\n\n".join(doc.page_content for doc in docs)
