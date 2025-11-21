@@ -51,9 +51,9 @@ Create a .env file in the root directory to store your API Key securely:
 ```bash
 cd chatbot-portfolio
 touch .env
-#Add your OpenAI key inside the .env file:
-OPENAI_API_KEY=sk-your-openai-api-key-here
 ```
+*Add your OpenAI key inside the .env file:*
+OPENAI_API_KEY=sk-your-openai-api-key-here
 ### 3.Build and Run (The "One-Click" Deploy)
 Launch the entire stack (API + Vector DB) using Docker Compose:
 ```bash

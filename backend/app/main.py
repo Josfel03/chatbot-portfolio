@@ -2,6 +2,7 @@ import os
 import shutil
 from fastapi import FastAPI, File, UploadFile, HTTPException
 from app.schemas import QuestionRequest, AnswerResponse
+from fastapi.middleware.cors import CORSMiddleware  # <--- 1. IMPORTAR ESTO
 # Importamos las funciones de TU motor
 from app.rag_engine import procesar_y_guardar_documento, preguntar_al_pdf
 
@@ -10,7 +11,13 @@ app = FastAPI(
     version="1.0.0", 
     description="API profesional que conecta FastAPI con LangChain y GPT-4o"
 )
-
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"], # Permitir solo al Frontend
+    allow_credentials=True,
+    allow_methods=["*"], # Permitir todos los métodos (GET, POST, etc.)
+    allow_headers=["*"], # Permitir todos los headers
+)
 # Carpeta temporal para guardar los PDFs que suban los usuarios
 UPLOAD_DIR = "uploaded_files"
 os.makedirs(UPLOAD_DIR, exist_ok=True)

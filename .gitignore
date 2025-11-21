@@ -1,6 +1,23 @@
-# Python / Backend
+# --- SISTEMA ---
+.DS_Store
+Thumbs.db
+
+# --- PYTHON (Backend) ---
 __pycache__/
-*.pyc
-*.db
-.venv/
+*.py[cod]
+*$py.class
+venv/
 .env
+chroma_db/
+
+# --- JAVASCRIPT (Frontend) ---
+node_modules/
+.next/
+out/
+build/
+dist/
+.env.local
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json # Opcional: Algunos prefieren subirlo, otros no. Yo prefiero subirlo.
