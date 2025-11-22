@@ -1,15 +1,47 @@
+version: '3.8'
+
 services:
-  rag-api:
-    build: .  # Construye usand el Dockerfile de aquí
-    container_name: chatbot-portfolio-container
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: chatbot-backend
     ports:
-      - "8000:8000" # Conecta el puerto 8000 de tu PC al 8000 del contenedor
+      - "8000:8000"
     volumes:
-      # PERSISTENCIA: Esto es clave.
-      # Mapeamos la carpeta chroma_db de tu PC a la del contenedor.
-      # Así, si apagas Docker, ¡tu IA no olvida lo que aprendió!
-      - ./chroma_db:/app/chroma_db
-      - ./uploaded_files:/app/uploaded_files
+      - ./backend/chroma_db:/app/chroma_db
+      - ./backend/uploaded_files:/app/uploaded_files
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - CHROMA_PERSIST_DIR=/app/chroma_db
     env_file:
-      - .env  # Pasa tu API KEY automáticamente
-    restart: always # Si la app crashea, intenta revivirla sola
+      - ./backend/.env
+    networks:
+      - chatbot-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: http://localhost:8000/api/v1
+    container_name: chatbot-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000/api/v1
+    
+        
+    networks:
+      - chatbot-network
+    restart: unless-stopped
+
+networks:
+  chatbot-network:
+    driver: bridge
