@@ -11,10 +11,12 @@ app = FastAPI(
     description="API de análisis de documentos con RAG, ChromaDB y OpenAI."
 )
 
-# CORS seguro: solo tu frontend o dominios de demo permitidos
+ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000").split(",")
+
+# CORS dinámico desde variables de entorno
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "https://tudominio.demo"],  # <--- reemplaza por tu frontend
+    allow_origins=ALLOWED_ORIGINS,  # Lista desde variable de entorno
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
