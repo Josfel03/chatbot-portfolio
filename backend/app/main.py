@@ -1,28 +1,31 @@
-# app/main.py
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routers import upload, query, health, admin
+from dotenv import load_dotenv
+from loguru import logger
 from app.core.config import settings
-from app.core.logger import logger
+
+# Cargar variables de entorno
+load_dotenv()
 
 app = FastAPI(
-    title="Enterprise RAG Chatbot API",
-    version="1.0.0",
-    description="API de análisis de documentos con RAG, ChromaDB y OpenAI."
+    title="RAG Chatbot API",
+    description="API para chatbot con RAG usando ChromaDB y OpenAI",
+    version="1.0.0"
 )
 
-ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000").split(",")
+# Configurar CORS desde settings
+ALLOWED_ORIGINS = settings.get_allowed_origins()
+logger.info(f"CORS habilitado para: {ALLOWED_ORIGINS}")
 
-# CORS dinámico desde variables de entorno
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=ALLOWED_ORIGINS,  # Lista desde variable de entorno
+    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Middlewares opcionales: logging estructurado global
+# Middleware de logging
 @app.middleware("http")
 async def log_requests(request, call_next):
     logger.info(f"Recibida: {request.method} {request.url}")
@@ -30,16 +33,18 @@ async def log_requests(request, call_next):
     logger.info(f"Respondida: {response.status_code} {request.url}")
     return response
 
-# Incluye todos tus routers/endpoints
+# Importar routers
+from app.routers import upload, query, health, admin
+
 app.include_router(upload.router)
 app.include_router(query.router)
 app.include_router(health.router)
 app.include_router(admin.router)
-# Endpoint base informativo opcional
-@app.get("/", tags=["Root"])
-async def read_root():
+
+@app.get("/")
+async def root():
     return {
-        "message": "RAG Chatbot API está corriendo",
-        "version": "1.0.0",
-        "docs": "/docs"
+        "message": "RAG Chatbot API",
+        "docs": "/docs",
+        "allowed_origins": ALLOWED_ORIGINS
     }
