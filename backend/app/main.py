@@ -1,66 +1,43 @@
-import os
-import shutil
-from fastapi import FastAPI, File, UploadFile, HTTPException
-from app.schemas import QuestionRequest, AnswerResponse
-from fastapi.middleware.cors import CORSMiddleware  # <--- 1. IMPORTAR ESTO
-# Importamos las funciones de TU motor
-from app.rag_engine import procesar_y_guardar_documento, preguntar_al_pdf
+# app/main.py
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from app.routers import upload, query, health, admin
+from app.core.config import settings
+from app.core.logger import logger
 
 app = FastAPI(
-    title="RAG Portfolio API",
-    version="1.0.0", 
-    description="API profesional que conecta FastAPI con LangChain y GPT-4o"
+    title="Enterprise RAG Chatbot API",
+    version="1.0.0",
+    description="API de análisis de documentos con RAG, ChromaDB y OpenAI."
 )
+
+# CORS seguro: solo tu frontend o dominios de demo permitidos
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"], # Permitir solo al Frontend
+    allow_origins=["http://localhost:3000", "https://tudominio.demo"],  # <--- reemplaza por tu frontend
     allow_credentials=True,
-    allow_methods=["*"], # Permitir todos los métodos (GET, POST, etc.)
-    allow_headers=["*"], # Permitir todos los headers
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
-# Carpeta temporal para guardar los PDFs que suban los usuarios
-UPLOAD_DIR = "uploaded_files"
-os.makedirs(UPLOAD_DIR, exist_ok=True)
 
-@app.get("/")
-def root():
-    return {"message": "La API de IA está lista. Ve a /docs para probarla."}
+# Middlewares opcionales: logging estructurado global
+@app.middleware("http")
+async def log_requests(request, call_next):
+    logger.info(f"Recibida: {request.method} {request.url}")
+    response = await call_next(request)
+    logger.info(f"Respondida: {response.status_code} {request.url}")
+    return response
 
-# --- ENDPOINT 1: SUBIR PDF ---
-@app.post("/upload-pdf/")
-async def upload_pdf(file: UploadFile = File(...)):
-    """
-    Recibe un archivo PDF, lo guarda temporalmente y lo procesa (Vectoriza).
-    """
-    # 1. Validar que sea PDF
-    if not file.filename.endswith(".pdf"):
-        raise HTTPException(status_code=400, detail="El archivo debe ser un PDF.")
-    
-    # 2. Guardar el archivo en disco
-    file_path = os.path.join(UPLOAD_DIR, file.filename)
-    with open(file_path, "wb") as buffer:
-        shutil.copyfileobj(file.file, buffer)
-    
-    # 3. Llamar a TU motor de IA
-    try:
-        exito = procesar_y_guardar_documento(file_path)
-        if exito:
-            return {"message": f"Archivo '{file.filename}' procesado e indexado con éxito."}
-    except Exception as e:
-        # Si falla, borramos el archivo y avisamos
-        os.remove(file_path)
-        raise HTTPException(status_code=500, detail=f"Error procesando el PDF: {str(e)}")
-
-# --- ENDPOINT 2: CHATEAR ---
-@app.post("/chat/", response_model=AnswerResponse)
-async def chat_endpoint(request: QuestionRequest):
-    """
-    Recibe una pregunta JSON, busca en la DB vectorial y responde.
-    """
-    try:
-        # Llamar a TU motor de IA
-        respuesta_texto = preguntar_al_pdf(request.question)
-        
-        return AnswerResponse(answer=respuesta_texto)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error en el motor de IA: {str(e)}")
+# Incluye todos tus routers/endpoints
+app.include_router(upload.router)
+app.include_router(query.router)
+app.include_router(health.router)
+app.include_router(admin.router)
+# Endpoint base informativo opcional
+@app.get("/", tags=["Root"])
+async def read_root():
+    return {
+        "message": "RAG Chatbot API está corriendo",
+        "version": "1.0.0",
+        "docs": "/docs"
+    }
