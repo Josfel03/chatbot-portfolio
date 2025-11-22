@@ -1,18 +1,14 @@
-// Interfaces definidas en tu prompt para Type Safety
-
 export interface Message {
-    id: string;
-    role: 'user' | 'bot';
-    content: string;
-    timestamp: Date;
+  id?: string;
+  role: "user" | "bot" | "system";
+  content: string;
+  sources?: Array<{ page: number }>;
+  timestamp?: Date;
 }
 
-export interface UploadedFile {
-    filename: string;
-    status: 'processing' | 'ready' | 'error';
-}
-
-export interface ChatSession {
-    id: string;
-    messages: Message[];
+export interface UploadResult {
+  document_id: string;
+  filename: string;
+  pages: number;
+  status: string;
 }

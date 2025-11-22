@@ -1,31 +1,29 @@
-# 1. IMAGEN BASE: Usamos Python 3.11 "Slim" (Versión ligera de Linux, estándar para IA)
+# Utiliza una imagen oficial de Python como base
 FROM python:3.11-slim
 
-# 2. VARIABLES DE ENTORNO: 
-# PYTHONDONTWRITEBYTECODE: Evita generar archivos .pyc (basura en contenedores)
-# PYTHONUNBUFFERED: Hace que los logs de Python salgan directo a la consola (vital para debug)
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
-
-# 3. DIRECTORIO DE TRABAJO: Creamos una carpeta /app dentro del contenedor
+# Establece el directorio de trabajo en el contenedor
 WORKDIR /app
 
-# 4. INSTALACIÓN DE DEPENDENCIAS (Capa de Caché):
-# Primero copiamos SOLO el requirements.txt. 
-# Docker se salta este paso en futuras construcciones. Ahorra mucho tiempo.
-COPY requirements.txt .
+# Copia los archivos de dependencias
+COPY requirements.txt ./
 
-# Instalamos las librerías
-RUN pip install --no-cache-dir -r requirements.txt
+# Instala las dependencias del proyecto
+RUN pip install --no-cache-dir --upgrade pip \
+    && pip install --no-cache-dir -r requirements.txt
 
-# 5. CÓDIGO FUENTE:
-# Ahora sí, copiamos todo el código (app/, .env, etc) dentro del contenedor
-COPY . .
+# Copia el código fuente de la app
+COPY ./app ./app
 
-# 6. PUERTO: Avisamos que la app escucha en el 8000
+# Crea el directorio de persistencia para ChromaDB y uploads
+RUN mkdir -p /app/chroma_db /app/uploaded_files
+
+# Expone el puerto por defecto de la app
 EXPOSE 8000
 
-# 7. COMANDO DE ARRANQUE:
-# Lanzamos Uvicorn.
-# --host 0.0.0.0 es OBLIGATORIO en Docker (para que sea accesible desde fuera)
+# Establece las variables de entorno en producción
+ENV PYTHONUNBUFFERED=1
+ENV CHROMA_PERSIST_DIR=/app/chroma_db
+ENV UPLOADS_DIR=/app/uploaded_files
+
+# Comando para lanzar la aplicación (puedes cambiar workers según necesidad)
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

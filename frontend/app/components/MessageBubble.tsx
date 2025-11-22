@@ -1,8 +1,8 @@
+'use client';
 
 import React from 'react';
-import ReactMarkdown from 'react-markdown';
 import { Message } from '../types';
-import { User, Bot, Copy } from 'lucide-react';
+import { User, Bot, Info } from 'lucide-react';
 
 interface Props {
   message: Message;
@@ -10,49 +10,38 @@ interface Props {
 
 export default function MessageBubble({ message }: Props) {
   const isUser = message.role === 'user';
-  const dateObj = new Date(message.timestamp);
+  const isSystem = message.role === 'system';
 
   return (
-    <div className={`flex w-full mb-6 animate-in fade-in slide-in-from-bottom-2 duration-300 ${isUser ? 'justify-end' : 'justify-start'}`}>
-      
-      {/* Contenedor flexible alineado al fondo */}
-      <div className={`flex max-w-[85%] md:max-w-[70%] ${isUser ? 'flex-row-reverse' : 'flex-row'} items-end gap-3`}>
-        
-        {/* Avatar con mejor sombra y borde */}
-        <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 border border-gray-100 shadow-sm
-          ${isUser 
-            ? 'bg-gradient-to-br from-green-500 to-green-600 text-white' 
-            : 'bg-white text-blue-600'}`}>
-          {isUser ? <User size={14} /> : <Bot size={18} />}
+    <div className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
+      <div className={`max-w-2xl flex gap-3 ${isUser ? 'flex-row-reverse' : 'flex-row'}`}>
+        {/* Avatar */}
+        <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
+          isUser ? 'bg-blue-600' : isSystem ? 'bg-yellow-500' : 'bg-gray-700'
+        }`}>
+          {isUser ? <User size={16} className="text-white" /> : 
+           isSystem ? <Info size={16} className="text-white" /> :
+           <Bot size={16} className="text-white" />}
         </div>
 
-        {/* La Burbuja: Más "Whatsapp", con sombra suave y mejor tipografía */}
-        <div className={`relative px-4 py-3 shadow-md text-[15px] leading-relaxed
-          ${isUser 
-            ? 'bg-[#d9fdd3] text-gray-900 rounded-2xl rounded-tr-sm' // Verde usuario, punta arriba derecha
-            : 'bg-white text-gray-800 rounded-2xl rounded-tl-sm'      // Blanco bot, punta arriba izquierda
-          }`}>
+        {/* Content */}
+        <div className={`px-4 py-2 rounded-lg ${
+          isUser ? 'bg-blue-600 text-white' :
+          isSystem ? 'bg-yellow-100 text-gray-900' :
+          'bg-white text-gray-900 border'
+        }`}>
+          <p className="whitespace-pre-line">{message.content}</p>
           
-          <div className="prose prose-sm max-w-none prose-p:my-1 prose-ul:my-1">
-             {isUser ? (
-                <p className="whitespace-pre-wrap">{message.content}</p>
-             ) : (
-                <ReactMarkdown>{message.content}</ReactMarkdown>
-             )}
-          </div>
-          
-          {/* Hora pequeña y discreta */}
-          <span 
-            suppressHydrationWarning={true} 
-            className={`text-[10px] block text-right mt-2 font-medium
-              ${isUser ? 'text-green-800/60' : 'text-gray-400'}
-            `}
-          >
-            {isNaN(dateObj.getTime()) 
-              ? '...' 
-              : dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-            }
-          </span>
+          {message.sources && message.sources.length > 0 && (
+            <div className="mt-2 pt-2 border-t border-gray-200">
+              <p className="text-xs font-semibold mb-1">Fuentes:</p>
+              <ul className="text-xs space-y-1">
+                {message.sources.map((src, idx) => (
+                  <li key={idx}>📄 Página {src.page}</li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
       </div>
     </div>

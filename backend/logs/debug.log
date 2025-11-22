@@ -104,3 +104,9 @@
 2025-11-21 21:53:09.274 | INFO     | app.main:log_requests:28 - Respondida: 500 http://127.0.0.1:8000/api/v1/query/
 2025-11-21 21:54:20.387 | INFO     | app.main:log_requests:26 - Recibida: POST http://127.0.0.1:8000/api/v1/query/
 2025-11-21 21:54:22.858 | INFO     | app.main:log_requests:28 - Respondida: 200 http://127.0.0.1:8000/api/v1/query/
+2025-11-22 11:06:07.516 | INFO     | app.main:log_requests:26 - Recibida: POST http://localhost:8000/api/v1/upload_pdf/
+2025-11-22 11:06:19.550 | INFO     | app.main:log_requests:28 - Respondida: 200 http://localhost:8000/api/v1/upload_pdf/
+2025-11-22 11:06:32.007 | INFO     | app.main:log_requests:26 - Recibida: OPTIONS http://localhost:8000/api/v1/query/
+2025-11-22 11:06:32.008 | INFO     | app.main:log_requests:28 - Respondida: 200 http://localhost:8000/api/v1/query/
+2025-11-22 11:06:32.011 | INFO     | app.main:log_requests:26 - Recibida: POST http://localhost:8000/api/v1/query/
+2025-11-22 11:06:38.107 | INFO     | app.main:log_requests:28 - Respondida: 200 http://localhost:8000/api/v1/query/
